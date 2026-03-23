@@ -231,99 +231,6 @@ sudo systemctl restart nginx                  # Restart Nginx
 sudo -u postgres psql -d jerney_db            # Connect to database
 ```
 
----
-
-## 🛠️ Troubleshooting
-
-### `apt` lock / setup.sh hangs mid-install
-
-Caused by the `needrestart` kernel upgrade dialog interrupting `apt`. Fix:
-
-```bash
-# Kill the stuck process
-sudo fuser -k /var/lib/dpkg/lock-frontend
-sudo fuser -k /var/cache/debconf/config.dat
-
-# Remove locks
-sudo rm -f /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/cache/apt/archives/lock
-
-# Repair dpkg
-sudo DEBIAN_FRONTEND=noninteractive dpkg --configure -a
-sudo DEBIAN_FRONTEND=noninteractive apt --fix-broken install -y
-
-# Re-run setup
-export NEEDRESTART_MODE=a
-export DEBIAN_FRONTEND=noninteractive
-./setup.sh
-```
-
-> If the above fails, reboot (`sudo reboot`), SSH back in, and retry from `dpkg --configure -a`.
-
----
-
-### Backend `errored` in PM2 — `client password must be a string`
-
-The `.env` file is missing. Follow **Step 5** above to create it.
-
----
-
-### `cp: cannot stat '/home/ubuntu/Jerney/*': No such file or directory`
-
-The setup script was pointing to the wrong directory. This is already fixed in the current version of `setup.sh`. If you see this error, verify the copy line in `setup.sh`:
-
-```bash
-grep "cp -r" deploy/setup.sh
-```
-
-It should read:
-
-```bash
-cp -r ~/E2E-DevSecOps/backend /var/www/e2e-devsecops/ && cp -r ~/E2E-DevSecOps/frontend /var/www/e2e-devsecops/
-```
-
----
-
-### Nginx config not found during setup
-
-The nginx config is at `~/E2E-DevSecOps/deploy/jerney-nginx.conf`. Verify `setup.sh` copies it correctly:
-
-```bash
-grep "nginx.conf" deploy/setup.sh
-```
-
-It should read:
-
-```bash
-sudo cp ~/E2E-DevSecOps/deploy/jerney-nginx.conf /etc/nginx/sites-available/e2e-devsecops
-```
-
----
-
-## 🌿 Branch Strategy
-
-| Branch | Purpose |
-|--------|---------|
-| `main` | Source code + EC2 bare-metal deployment |
-| `devops` | Full DevSecOps — Docker, Kubernetes (EKS), Terraform, CI/CD pipeline, security scanning |
-
----
-
-## 📡 API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/health` | Health check |
-| GET | `/api/posts` | Get all posts |
-| GET | `/api/posts/:id` | Get single post with comments |
-| POST | `/api/posts` | Create a new post |
-| PUT | `/api/posts/:id` | Update a post |
-| DELETE | `/api/posts/:id` | Delete a post |
-| GET | `/api/comments/post/:postId` | Get comments for a post |
-| POST | `/api/comments` | Create a comment |
-| DELETE | `/api/comments/:id` | Delete a comment |
-
----
-
 ## 🧑‍💻 Local Development (Without Docker)
 
 ### Prerequisites
@@ -355,5 +262,151 @@ npm install
 npm run dev
 ```
 
-The Vite dev server starts on `http://localhost:3000` and proxies `/api` requests to the backend at `http://localhost:5000`.
+The dev server starts on `http://localhost:3000` and proxies `/api` requests to the backend at `http://localhost:5000`.
+
+
+## Iac implementation with Terraform
+
+```sh
+aws configure
+
+terraform --version
+
+terraform init
+
+terraform plan
+
+terraform apply  # This will take up to 15 mins.
+
+aws eks update-kubeconfig --name jerney-eks --region us-east-1
+kubectl get pods -A 
+kubectl get nodes  # No nodes why because we created EKS Auto mode, Karpenter will set nodes based on loads.
+
+kubectl create deployment nginx --image nginx:latest
+
+```
+
+## Containerizing the Application
+
+```sh
+cd frontend
+docker build -t jerney-frontend:latest .
+
+cd ../backend
+docker build -t jeeney-backend:latest .
+
+# Docker Compose file 
+
+cat ../E2E-DevSecOps/docker-compose.yml
+
+docker compose up -d
+
+```
+
+```sh
+
+docker images
+docker login
+
+
+docker tag 21dae9b74b38 nsaishiva12/jerney-frontend:latest
+
+docker push nsaishiva12/jerney-frontend:latest
+
+
+docker tag 79ee26c26a18 nsaishiva12/jerney-backend:latest
+
+docker push nsaishiva12/jerney-backend:latest
+
+```
+
+- Now we can access the Jerney application by localhost:80
+
+## Project implementation with Kubernetes Manifests
+
+Frontend, Backend and Database
+
+Deployment + Persistent Volume Claim + Storage Class
+
+Frontend -- Deployment + Service
+Backend --  Deployment + Service + Database Secret + Network Policies --> Will accept the only if its coming from frontend.
+Database -- Deployment + Service + Persistent Volume Claim + Storage Class --> Will Allow request from backend.
+
+```sh
+
+kubectl get nodes
+
+kubectl apply -f e2e-devsecops.yaml
+
+kubectl get svc -n jerney
+
+kubectl port-forward svc/jerney-frontend 8100:80 -n jerney --address 0.0.0.0
+
+
+```
+
+- Now we can access app localhost:8100
+
+## Project implementation with GitHub Actions for CI
+
+- Updated  .github/workflows/ci-cd.yml file with required code
+- Push code to devops branch to run the CI Pipeline.
+
+## Deployment with Argo CD.
+
+ Install Argo CD
+
+```sh
+kubectl create namespace argocd
+kubectl apply -n argocd --server-side --force-conflicts -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+kubectl get all -n argocd
+
+kubectl get secrets -n argocd
+
+kubectl edit secret argocd-initial-admin-secret -n argocd
+
+# dTQtejQ0TkdYaTBMTlg0Tw==
+
+echo dTQtejQ0TkdYaTBMTlg0Tw== | base64 --decode
+
+#u4-z44NGXi0LNX4O
+
+kubectl get svc -n argocd
+
+kubectl port-forward svc/argocd-server 7111:80 -n argocd --address 0.0.0.0
+
+```
+
+- ArgoCD can be accessible - localhost:7111
+- Use browser and configure the application with github repo and k8s manifest path for automatic deployment in to ArgoCd.
+
+---
+
+## 📡 API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/health` | Health check |
+| GET | `/api/posts` | Get all posts |
+| GET | `/api/posts/:id` | Get single post with comments |
+| POST | `/api/posts` | Create a new post |
+| PUT | `/api/posts/:id` | Update a post |
+| DELETE | `/api/posts/:id` | Delete a post |
+| GET | `/api/comments/post/:postId` | Get comments for a post |
+| POST | `/api/comments` | Create a comment |
+| DELETE | `/api/comments/:id` | Delete a comment |
+
+
+---
+
+## 🌿 Branch Strategy
+
+| Branch | Purpose |
+|--------|---------|
+| `main` | Source code + EC2 bare-metal deployment |
+| `devops` | Full DevSecOps — Docker, Kubernetes (EKS), Terraform, CI/CD pipeline, security scanning |
+
+---
+
 
