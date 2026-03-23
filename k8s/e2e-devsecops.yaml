@@ -200,7 +200,7 @@ spec:
               echo "DB is ready!"
       containers:
         - name: backend
-          image: docker.io/nsaishiva12/jerney-backend:latest
+          image: ghcr.io/nsaishiva/E2E-DevSecOps/e2e-backend:75df9b4
           ports:
             - containerPort: 5000
               protocol: TCP
@@ -307,7 +307,7 @@ spec:
           effect: "NoSchedule"
       containers:
         - name: frontend
-          image: docker.io/nsaishiva12/jerney-frontend:latest
+          image: ghcr.io/nsaishiva/E2E-DevSecOps/e2e-frontend:75df9b4
           ports:
             - containerPort: 8080
               protocol: TCP
