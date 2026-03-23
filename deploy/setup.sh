@@ -51,7 +51,7 @@ sudo mkdir -p /var/www/e2e-devsecops
 sudo chown -R $USER:$USER /var/www/e2e-devsecops
 
 # Copy project files (assumes you've transferred them to ~/Jerney)
-cp -r ~/E2E-DevSecOps/backend /var/www/e2e-devsecops/ && cp -r ~/E2E-DevSecOps/frontend /var/www/e2e-devsecops/
+cp -r ~/E2E-DevSecOps/ /var/www/e2e-devsecops/
 
 # --- Install backend dependencies ---
 echo "📦 Installing backend dependencies..."
@@ -66,7 +66,7 @@ npm run build
 
 # --- Configure Nginx ---
 echo "🌐 Configuring Nginx..."
-sudo cp ~/E2E-DevSecOps/deploy/jerney-nginx.conf /etc/nginx/sites-available/e2e-devsecops
+sudo cp /var/www/e2e-devsecops/deploy/jerney-nginx.conf /etc/nginx/sites-available/e2e-devsecops
 sudo ln -sf /etc/nginx/sites-available/e2e-devsecops /etc/nginx/sites-enabled/e2e-devsecops
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t
