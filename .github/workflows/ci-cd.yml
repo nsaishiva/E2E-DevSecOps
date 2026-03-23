@@ -7,11 +7,10 @@
 
 name: E2E-DevSecOps Pipeline
 
-#on:
-#  push:
- #   branches: ["*"]
- # pull_request:
-  #  branches: ["*"]
+on:
+  push:
+    branches:
+      - devops
 
 # Security: restrict default permissions to read-only
 permissions:
