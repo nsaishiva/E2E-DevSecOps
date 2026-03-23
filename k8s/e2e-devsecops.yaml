@@ -200,7 +200,7 @@ spec:
               echo "DB is ready!"
       containers:
         - name: backend
-          image: ghcr.io/nsaishiva/E2E-DevSecOps/e2e-backend:aa75e52
+          image: ghcr.io/nsaishiva/E2E-DevSecOps/e2e-backend:496d239
           ports:
             - containerPort: 5000
               protocol: TCP
@@ -307,7 +307,7 @@ spec:
           effect: "NoSchedule"
       containers:
         - name: frontend
-          image: ghcr.io/nsaishiva/E2E-DevSecOps/e2e-frontend:aa75e52
+          image: ghcr.io/nsaishiva/E2E-DevSecOps/e2e-frontend:496d239
           ports:
             - containerPort: 8080
               protocol: TCP
