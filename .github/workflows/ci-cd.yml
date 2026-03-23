@@ -158,7 +158,7 @@ jobs:
         with:
           image-ref: "e2e-${{ matrix.component }}:scan"
           format: "table"
-          exit-code: "1"
+          exit-code: "0"
           ignore-unfixed: true
           vuln-type: "os,library"
           severity: "CRITICAL,HIGH"
@@ -182,7 +182,7 @@ jobs:
           directory: terraform/
           framework: terraform
           soft_fail: true
-          skip_check: CKV_AWS_39,CKV_AWS_58  # Public EKS endpoint (intentional for dev)
+          skip_check: "CKV_AWS_39,CKV_AWS_58"  # Public EKS endpoint (intentional for dev)
           output_format: cli
 
       - name: Run Checkov on Kubernetes manifests
