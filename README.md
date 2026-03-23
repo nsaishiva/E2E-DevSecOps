@@ -95,10 +95,11 @@ git clone https://github.com/nsaishiva/E2E-DevSecOps.git
 
 The `deploy/setup.sh` script installs everything and configures the app automatically:
 
-```bash
-cd ~/Jerney
-chmod +x deploy/setup.sh
-./deploy/setup.sh
+```sh
+cd ~/E2E-DevSecOps/deploy
+export NEEDRESTART_MODE=a
+export DEBIAN_FRONTEND=noninteractive
+./setup.sh
 ```
 
 This script will:
