@@ -12,6 +12,7 @@ on:
     branches:
       - devops
 
+
 # Security: restrict default permissions to read-only
 permissions:
   contents: read
