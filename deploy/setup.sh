@@ -47,27 +47,27 @@ echo "✅ PostgreSQL configured"
 
 # --- Set up project directory ---
 echo "📁 Setting up project..."
-sudo mkdir -p /var/www/jerney
-sudo chown -R $USER:$USER /var/www/jerney
+sudo mkdir -p /var/www/e2e-devsecops
+sudo chown -R $USER:$USER /var/www/e2e-devsecops
 
 # Copy project files (assumes you've transferred them to ~/Jerney)
-cp -r ~/Jerney/* /var/www/jerney/
+cp -r ~/E2E-DevSecOps/backend /var/www/e2e-devsecops/ && cp -r ~/E2E-DevSecOps/frontend /var/www/e2e-devsecops/
 
 # --- Install backend dependencies ---
 echo "📦 Installing backend dependencies..."
-cd /var/www/jerney/backend
+cd /var/www/e2e-devsecops/backend
 npm install --production
 
 # --- Build frontend ---
 echo "🔨 Building frontend..."
-cd /var/www/jerney/frontend
+cd /var/www/e2e-devsecops/frontend
 npm install
 npm run build
 
 # --- Configure Nginx ---
 echo "🌐 Configuring Nginx..."
-sudo cp /var/www/jerney/deploy/jerney-nginx.conf /etc/nginx/sites-available/jerney
-sudo ln -sf /etc/nginx/sites-available/jerney /etc/nginx/sites-enabled/jerney
+sudo cp ~/E2E-DevSecOps/deploy/jerney-nginx.conf /etc/nginx/sites-available/e2e-devsecops
+sudo ln -sf /etc/nginx/sites-available/e2e-devsecops /etc/nginx/sites-enabled/e2e-devsecops
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t
 sudo systemctl restart nginx
@@ -75,8 +75,8 @@ sudo systemctl enable nginx
 
 # --- Start backend with PM2 ---
 echo "🚀 Starting backend with PM2..."
-cd /var/www/jerney/backend
-pm2 start src/index.js --name jerney-backend
+cd /var/www/e2e-devsecops/backend
+pm2 start src/index.js --name e2e-backend
 pm2 save
 pm2 startup systemd -u $USER --hp /home/$USER | tail -1 | sudo bash
 
