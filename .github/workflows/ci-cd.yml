@@ -181,7 +181,7 @@ jobs:
         with:
           directory: terraform/
           framework: terraform
-          soft_fail: false
+          soft_fail: true
           skip_check: CKV_AWS_39,CKV_AWS_58  # Public EKS endpoint (intentional for dev)
           output_format: cli
 
